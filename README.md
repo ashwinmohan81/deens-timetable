@@ -1,77 +1,158 @@
-# Deens Timetable
+# Deens Academy Timetable Application
 
-A modern, responsive timetable management application built with React and Supabase.
+A modern timetable management application built with React and Supabase, designed for class teachers to create and manage timetables that are viewable by all users.
 
 ## Features
 
-- 📅 Create and manage timetables
-- 🎨 Drag and drop interface
-- 👤 User authentication
-- 💾 Real-time data persistence
-- 📱 Mobile responsive design
+### MVP Requirements ✅
+- **Teacher Registration & Authentication**
+  - Teacher registration with unique User ID, email, and class/section
+  - Prevents duplicate class/section registrations
+  - Secure login system
+
+- **Timetable Management**
+  - Fixed 8 periods per day (Monday to Friday)
+  - Teachers can create/edit/delete subjects for their class
+  - Drag-and-drop style timetable creation
+  - Real-time updates
+
+- **Public Viewing**
+  - Anyone can view timetables by selecting class/section
+  - Shows class teacher information
+  - Clean, responsive design
+
+- **Account Management**
+  - Teachers can unregister (removes all associated data)
+  - Secure password management
 
 ## Tech Stack
 
-- **Frontend**: React 18, Vite
+- **Frontend**: React 18 + Vite
 - **Backend**: Supabase (PostgreSQL + Auth + Real-time)
-- **Styling**: CSS Modules + Lucide Icons
-- **Date Handling**: date-fns
+- **Styling**: CSS3 with modern design principles
+- **State Management**: React Hooks
+- **Authentication**: Supabase Auth
 
-## Getting Started
+## Setup Instructions
 
-### Prerequisites
+### 1. Database Setup
 
-- Node.js 18+ 
-- npm or yarn
-- Supabase account
+First, run the database schema in your Supabase project:
 
-### Installation
-
-1. Clone the repository:
-```bash
-git clone <your-bitbucket-repo-url>
-cd deens-timetable
+```sql
+-- Copy and paste the contents of database-schema.sql into your Supabase SQL editor
+-- This will create all necessary tables and security policies
 ```
 
-2. Install dependencies:
+### 2. Environment Configuration
+
+Your Supabase configuration is already set up in `src/config/supabase.js` with:
+- Project URL: `https://dgdisihqmdbhxzpquilu.supabase.co`
+- Anonymous key configured
+
+### 3. Install Dependencies
+
 ```bash
 npm install
 ```
 
-3. Start development server:
+### 4. Start Development Server
+
 ```bash
 npm run dev
 ```
 
-4. Open [http://localhost:5173](http://localhost:5173) in your browser
+The application will be available at `http://localhost:5173`
 
-## Development
+## Usage Flow
 
-- `npm run dev` - Start development server
-- `npm run build` - Build for production
-- `npm run preview` - Preview production build
-- `npm run lint` - Run ESLint
+### For Teachers:
+1. **Register** with unique User ID, email, and class/section
+2. **Login** with User ID and password
+3. **Add Subjects** for your class (e.g., Math, Science, English)
+4. **Create Timetable** by selecting subjects for each time slot
+5. **Manage** your timetable - edit, delete, or clear slots
+6. **Unregister** if needed (removes all data)
 
-## Project Structure
+### For Viewers:
+1. Navigate to "View Timetable"
+2. Select a class/section from the dropdown
+3. View the complete timetable and teacher information
+
+## Database Schema
+
+- **teachers**: Teacher accounts with unique class/section assignments
+- **subjects**: Subjects available for each class
+- **timetable**: Time slot assignments linking subjects to periods
+
+## Security Features
+
+- Row Level Security (RLS) enabled on all tables
+- Teachers can only modify their own class data
+- Timetables are publicly viewable but only editable by class teachers
+- Secure authentication via Supabase Auth
+
+## File Structure
 
 ```
 src/
-├── components/     # Reusable UI components
-├── config/        # Configuration files
-├── hooks/         # Custom React hooks
-├── pages/         # Page components
-├── services/      # API and database services
-├── styles/        # CSS and styling
-└── utils/         # Utility functions
+├── components/
+│   ├── Login.jsx           # Teacher login component
+│   ├── Register.jsx        # Teacher registration component
+│   ├── TeacherDashboard.jsx # Main teacher interface
+│   ├── SubjectManager.jsx  # Subject CRUD operations
+│   ├── TimetableManager.jsx # Timetable creation/editing
+│   └── ViewTimetable.jsx   # Public timetable viewing
+├── config/
+│   └── supabase.js         # Supabase client configuration
+├── App.jsx                 # Main application component
+├── App.css                 # Comprehensive styling
+└── main.jsx               # Application entry point
 ```
 
-## Contributing
+## Development Commands
 
-1. Create a feature branch
-2. Make your changes
-3. Commit with descriptive messages
-4. Push and create a pull request
+```bash
+npm run dev          # Start development server
+npm run build        # Build for production
+npm run preview      # Preview production build
+npm run lint         # Run ESLint
+```
 
-## License
+## Customization
 
-MIT
+- **Colors**: Modify CSS variables in `App.css`
+- **Layout**: Adjust grid and flexbox properties
+- **Subjects**: Teachers can add any subjects they need
+- **Time Slots**: Currently 8 periods, can be modified in components
+
+## Browser Support
+
+- Modern browsers (Chrome, Firefox, Safari, Edge)
+- Mobile responsive design
+- Progressive Web App ready
+
+## Deployment
+
+The application can be deployed to:
+- Vercel
+- Netlify
+- Supabase Edge Functions
+- Any static hosting service
+
+## Support
+
+For issues or questions:
+1. Check the browser console for errors
+2. Verify Supabase connection and permissions
+3. Ensure database schema is properly set up
+4. Check that all dependencies are installed
+
+## Future Enhancements
+
+- Multiple time slots per day
+- Conflict detection
+- Export to PDF/Excel
+- Mobile app
+- Admin panel for school management
+- Integration with school management systems

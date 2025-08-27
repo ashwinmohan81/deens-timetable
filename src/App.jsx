@@ -63,6 +63,9 @@ function App() {
                     Teacher Login
                   </button>
                 </div>
+                <div className="credit-text">
+                  <p>Project Conceived and Created by <strong>Rishi Ashwin</strong> of Grade 8B</p>
+                </div>
               </div>
             </div>
           )}

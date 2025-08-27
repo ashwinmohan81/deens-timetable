@@ -571,6 +571,25 @@ main {
   left: 100%;
 }
 
+/* Credit Text */
+.credit-text {
+  margin-top: 3rem;
+  padding-top: 2rem;
+  border-top: 1px solid #e9ecef;
+}
+
+.credit-text p {
+  font-size: 1rem;
+  color: #888;
+  margin: 0;
+  font-style: italic;
+}
+
+.credit-text strong {
+  color: #667eea;
+  font-weight: 600;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .header {

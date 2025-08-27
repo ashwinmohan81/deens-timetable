@@ -465,6 +465,112 @@ main {
   font-style: italic;
 }
 
+/* Welcome Section */
+.welcome-section {
+  text-align: center;
+  padding: 3rem 0;
+}
+
+.welcome-content {
+  max-width: 700px;
+  margin: 0 auto 2rem;
+}
+
+.welcome-content h2 {
+  font-size: 3rem;
+  margin-bottom: 1.5rem;
+  color: #333;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-weight: 700;
+}
+
+.welcome-content p {
+  font-size: 1.3rem;
+  color: #666;
+  margin-bottom: 2rem;
+  line-height: 1.7;
+  max-width: 500px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.welcome-actions {
+  display: flex;
+  gap: 2rem;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: 2rem;
+}
+
+/* Button Base Styles */
+.welcome-actions .btn-primary,
+.welcome-actions .btn-secondary {
+  padding: 0;
+  border: none;
+  border-radius: 10px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  width: 220px;
+  height: 60px;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  line-height: 1;
+}
+
+.welcome-actions .btn-primary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: 2px solid transparent;
+}
+
+.welcome-actions .btn-secondary {
+  background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+  color: white;
+  border: 2px solid transparent;
+}
+
+.welcome-actions .btn-primary:hover,
+.welcome-actions .btn-secondary:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+  border-color: rgba(255,255,255,0.3);
+}
+
+.welcome-actions .btn-primary:active,
+.welcome-actions .btn-secondary:active {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+.welcome-actions .btn-primary::before,
+.welcome-actions .btn-secondary::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  transition: left 0.5s;
+}
+
+.welcome-actions .btn-primary:hover::before,
+.welcome-actions .btn-secondary:hover::before {
+  left: 100%;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .header {

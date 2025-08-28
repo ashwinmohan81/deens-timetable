@@ -26,13 +26,17 @@ function ViewTimetable() {
 
   const fetchClasses = async () => {
     try {
+      console.log('Fetching classes from database...');
       const { data, error } = await supabase
         .from('teachers')
         .select('class_section')
         .order('class_section');
 
       if (error) throw error;
-      setClasses(data.map(item => item.class_section));
+      
+      const classList = data.map(item => item.class_section);
+      console.log('Available classes:', classList);
+      setClasses(classList);
     } catch (err) {
       console.error('Error fetching classes:', err);
     }
@@ -172,6 +176,13 @@ function ViewTimetable() {
             </option>
           ))}
         </select>
+        <button 
+          onClick={fetchClasses} 
+          className="btn-secondary refresh-btn"
+          title="Refresh class list"
+        >
+          🔄 Refresh
+        </button>
       </div>
 
       {selectedClass && (

@@ -67,10 +67,15 @@ function TimetableManager({ classSection }) {
           });
           
           // Try different possible field names for day and period
-          const dayKey = item.day || item.day_of_week || item.day_name;
+          let dayKey = item.day || item.day_of_week || item.day_name;
           const periodKey = item.period || item.period_number || item.period_name;
           
-          console.log('Using keys:', { dayKey, periodKey });
+          // Convert numeric day to day name if needed
+          if (typeof dayKey === 'number' && dayKey >= 1 && dayKey <= 5) {
+            dayKey = days[dayKey - 1]; // Convert 1->Monday, 2->Tuesday, etc.
+          }
+          
+          console.log('Using keys:', { dayKey, periodKey, originalDay: item.day_of_week });
           
           if (dayKey && periodKey) {
             if (!timetableObj[dayKey]) {
@@ -218,8 +223,13 @@ function TimetableManager({ classSection }) {
       if (data && data.length > 0) {
         data.forEach(item => {
           // Try different possible field names for day and period
-          const dayKey = item.day || item.day_of_week || item.day_name;
+          let dayKey = item.day || item.day_of_week || item.day_name;
           const periodKey = item.period || item.period_number || item.period_name;
+          
+          // Convert numeric day to day name if needed
+          if (typeof dayKey === 'number' && dayKey >= 1 && dayKey <= 5) {
+            dayKey = days[dayKey - 1]; // Convert 1->Monday, 2->Tuesday, etc.
+          }
           
           if (dayKey && periodKey) {
             if (!loadedTimetable[dayKey]) {

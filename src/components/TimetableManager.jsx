@@ -37,30 +37,44 @@ function TimetableManager({ classSection }) {
 
   const fetchTimetable = async () => {
     try {
+      console.log('Fetching timetable for class:', classSection);
+      
       const { data, error } = await supabase
         .from('timetable')
         .select(`
           *,
           subjects(subject_name)
         `)
-        .eq('class_section', classSection)
-        .order('day_of_week, period_number');
+        .eq('class_section', classSection);
 
       if (error) throw error;
 
-      // Convert to timetable object
-      const timetableObj = {};
-      data.forEach(item => {
-        if (!timetableObj[item.day_of_week]) {
-          timetableObj[item.day_of_week] = {};
-        }
-        timetableObj[item.day_of_week][item.period_number] = {
-          id: item.id,
-          subject_id: item.subject_id,
-          subject_name: item.subjects.subject_name
-        };
-      });
+      console.log('Raw timetable data:', data);
 
+      // Convert to timetable object - handle different possible data structures
+      const timetableObj = {};
+      if (data && data.length > 0) {
+        data.forEach(item => {
+          console.log('Processing item:', item);
+          
+          // Try different possible field names for day and period
+          const dayKey = item.day || item.day_of_week || item.day_name;
+          const periodKey = item.period || item.period_number || item.period_name;
+          
+          if (dayKey && periodKey) {
+            if (!timetableObj[dayKey]) {
+              timetableObj[dayKey] = {};
+            }
+            timetableObj[dayKey][periodKey] = {
+              id: item.id,
+              subject_id: item.subject_id,
+              subject_name: item.subjects?.subject_name || 'Unknown Subject'
+            };
+          }
+        });
+      }
+
+      console.log('Processed timetable object:', timetableObj);
       setTimetable(timetableObj);
     } catch (err) {
       console.error('Error fetching timetable:', err);
@@ -129,7 +143,15 @@ function TimetableManager({ classSection }) {
   };
 
   const getSubjectName = (day, period) => {
-    return timetable[day]?.[period]?.subject_name || '';
+    // Convert day number to day name (1 = Monday, 2 = Tuesday, etc.)
+    const dayName = days[day - 1];
+    
+    // Try to get subject from the timetable object
+    const subjectData = timetable[dayName]?.[period] || timetable[day]?.[period];
+    
+    console.log(`Looking for subject: day=${dayName}, period=${period}, found=${subjectData?.subject_name || 'none'}`);
+    
+    return subjectData?.subject_name || '';
   };
 
   const calculateCurrentWeek = () => {
@@ -186,19 +208,37 @@ function TimetableManager({ classSection }) {
     try {
       const { data, error } = await supabase
         .from('timetable')
-        .select('*')
+        .select(`
+          *,
+          subjects(subject_name)
+        `)
         .eq('class_section', classSection);
 
       if (error) throw error;
 
+      console.log('Loading timetable data:', data);
+
       const loadedTimetable = {};
-      data.forEach(item => {
-        loadedTimetable[`${item.day_of_week}_${item.period_number}`] = {
-          id: item.id,
-          subject_id: item.subject_id,
-          subject_name: item.subjects.subject_name // Assuming subjects table has subject_name
-        };
-      });
+      if (data && data.length > 0) {
+        data.forEach(item => {
+          // Try different possible field names for day and period
+          const dayKey = item.day || item.day_of_week || item.day_name;
+          const periodKey = item.period || item.period_number || item.period_name;
+          
+          if (dayKey && periodKey) {
+            if (!loadedTimetable[dayKey]) {
+              loadedTimetable[dayKey] = {};
+            }
+            loadedTimetable[dayKey][periodKey] = {
+              id: item.id,
+              subject_id: item.subject_id,
+              subject_name: item.subjects?.subject_name || 'Unknown Subject'
+            };
+          }
+        });
+      }
+
+      console.log('Loaded timetable object:', loadedTimetable);
       setTimetable(loadedTimetable);
       setMessage('Timetable loaded successfully!');
     } catch (err) {
@@ -235,8 +275,8 @@ function TimetableManager({ classSection }) {
           .from('timetable')
           .insert({
             class_section: classSection,
-            day_of_week: day,
-            period_number: period,
+            day: day,
+            period: period,
             subject_id: subjectId
           });
 

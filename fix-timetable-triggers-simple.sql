@@ -1,16 +1,16 @@
--- Fix for timetable triggers - handles DELETE operations properly
+-- Simple fix for timetable triggers - completely clean slate
 -- Run this in your Supabase SQL editor
 
--- Drop existing triggers first (with CASCADE to handle dependencies)
+-- Step 1: Drop ALL triggers on the timetable table (CASCADE handles dependencies)
 DROP TRIGGER IF EXISTS timetable_change_tracker ON timetable CASCADE;
 DROP TRIGGER IF EXISTS timetable_change_tracker_insert ON timetable CASCADE;
 DROP TRIGGER IF EXISTS timetable_change_tracker_delete ON timetable CASCADE;
 DROP TRIGGER IF EXISTS timetable_change_tracker_update ON timetable CASCADE;
 
--- Drop the old function (now safe since all triggers are gone)
+-- Step 2: Drop the function (CASCADE to be safe)
 DROP FUNCTION IF EXISTS track_timetable_changes() CASCADE;
 
--- Create fixed function that handles all operations correctly
+-- Step 3: Create the fixed function
 CREATE OR REPLACE FUNCTION track_timetable_changes()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -125,7 +125,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- Create triggers for each operation type
+-- Step 4: Create new triggers
 CREATE TRIGGER timetable_change_tracker_delete
   AFTER DELETE ON timetable
   FOR EACH ROW
@@ -141,3 +141,12 @@ CREATE TRIGGER timetable_change_tracker_update
   FOR EACH ROW
   WHEN (OLD.subject_id IS DISTINCT FROM NEW.subject_id)
   EXECUTE FUNCTION track_timetable_changes();
+
+-- Step 5: Verify triggers are created
+SELECT 
+  trigger_name, 
+  event_manipulation, 
+  action_timing, 
+  action_statement
+FROM information_schema.triggers 
+WHERE event_object_table = 'timetable';

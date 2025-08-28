@@ -16,46 +16,10 @@ function StudentDashboard({ user, onViewChange }) {
     fetchStudentData();
     fetchAvailableClasses();
     
-    // Test if the student_registrations table exists
-    testDatabaseConnection();
+
   }, [user]);
 
-  const testDatabaseConnection = async () => {
-    try {
-      console.log('Testing database connection...');
-      
-      // Test if student_registrations table exists
-      const { data, error } = await supabase
-        .from('student_registrations')
-        .select('*')
-        .limit(1);
-      
-      if (error) {
-        console.error('❌ student_registrations table error:', error);
-        if (error.code === '42P01') {
-          console.error('❌ Table does not exist! Run the student-schema.sql first.');
-        }
-      } else {
-        console.log('✅ student_registrations table exists and accessible');
-        console.log('Sample data:', data);
-      }
-      
-      // Test if students table exists
-      const { data: studentsData, error: studentsError } = await supabase
-        .from('students')
-        .select('*')
-        .limit(1);
-      
-      if (studentsError) {
-        console.error('❌ students table error:', studentsError);
-      } else {
-        console.log('✅ students table exists and accessible');
-      }
-      
-    } catch (err) {
-      console.error('Database connection test failed:', err);
-    }
-  };
+
 
   const fetchStudentData = async () => {
     try {
@@ -112,17 +76,8 @@ function StudentDashboard({ user, onViewChange }) {
 
   const fetchRegisteredClasses = async (studentId) => {
     try {
-      console.log('Fetching registered classes for student:', studentId);
-      
-      // First, let's check if the student_registrations table exists and has data
-      const { data: tableCheck, error: tableError } = await supabase
-        .from('student_registrations')
-        .select('*')
-        .limit(5);
 
-      console.log('Table check result:', { tableCheck, tableError });
       
-      // Now fetch the specific student's registrations
       const { data, error } = await supabase
         .from('student_registrations')
         .select('*')
@@ -133,8 +88,6 @@ function StudentDashboard({ user, onViewChange }) {
         throw error;
       }
       
-      console.log('Raw registrations data:', data);
-      
       // Transform the data to match the expected structure
       const transformedData = data.map(registration => ({
         ...registration,
@@ -144,7 +97,6 @@ function StudentDashboard({ user, onViewChange }) {
         }
       }));
       
-      console.log('Transformed registrations data:', transformedData);
       setRegisteredClasses(transformedData || []);
     } catch (err) {
       console.error('Error fetching registered classes:', err);
@@ -157,9 +109,14 @@ function StudentDashboard({ user, onViewChange }) {
       setError('');
       setMessage('');
       
-      console.log('Attempting to register for class:', classSection);
-      console.log('Student ID:', student.id);
-      console.log('Current registered classes:', registeredClasses);
+
+      
+      // Check if student is already registered for ANY class
+      if (registeredClasses.length > 0) {
+        setError('You can only register for 1 class. Please unregister from your current class first.');
+        setLoading(false);
+        return;
+      }
       
       // Check if already registered - also check the database directly
       const { data: existingRegistration, error: checkError } = await supabase
@@ -203,7 +160,7 @@ function StudentDashboard({ user, onViewChange }) {
         throw error;
       }
 
-      console.log('Registration successful:', data);
+
 
       // Refresh registered classes
       await fetchRegisteredClasses(student.id);
@@ -289,23 +246,7 @@ function StudentDashboard({ user, onViewChange }) {
         </div>
       )}
 
-      {/* Debug section - remove this after fixing */}
-      <div className="debug-section" style={{ background: '#f0f0f0', padding: '1rem', margin: '1rem 0', borderRadius: '6px' }}>
-        <h4>Debug Info:</h4>
-        <p><strong>Student ID:</strong> {student?.id || 'Not set'}</p>
-        <p><strong>Student Email:</strong> {user?.email || 'Not set'}</p>
-        <p><strong>Registered Classes Count:</strong> {registeredClasses.length}</p>
-        <p><strong>Available Classes Count:</strong> {availableClasses.length}</p>
-        <button 
-          onClick={() => {
-            console.log('Current state:', { student, registeredClasses, availableClasses });
-            fetchRegisteredClasses(student?.id);
-          }} 
-          className="btn-secondary"
-        >
-          Debug: Log State & Refresh
-        </button>
-      </div>
+
 
       <div className="dashboard-content">
         <div className="registered-classes">
@@ -350,21 +291,28 @@ function StudentDashboard({ user, onViewChange }) {
 
         <div className="available-classes">
           <h3>Available Classes</h3>
-          <div className="classes-grid">
-            {availableClasses.map((classInfo) => (
-              <div key={classInfo.class_section} className="class-card available">
-                <h4>{classInfo.class_section}</h4>
-                <p>Teacher: {classInfo.teacher_name}</p>
-                <button
-                  onClick={() => handleClassRegistration(classInfo.class_section)}
-                  className="btn-primary"
-                  disabled={loading}
-                >
-                  Register for Class
-                </button>
-              </div>
-            ))}
-          </div>
+          {registeredClasses.length > 0 ? (
+            <div className="no-classes">
+              <p>You are already registered for a class. You can only register for 1 class at a time.</p>
+              <p>To register for a different class, please unregister from your current class first.</p>
+            </div>
+          ) : (
+            <div className="classes-grid">
+              {availableClasses.map((classInfo) => (
+                <div key={classInfo.class_section} className="class-card available">
+                  <h4>{classInfo.class_section}</h4>
+                  <p>Teacher: {classInfo.teacher_name}</p>
+                  <button
+                    onClick={() => handleClassRegistration(classInfo.class_section)}
+                    className="btn-primary"
+                    disabled={loading}
+                  >
+                    Register for Class
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>

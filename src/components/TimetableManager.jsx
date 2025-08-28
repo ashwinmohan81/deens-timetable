@@ -72,6 +72,7 @@ function TimetableManager({ classSection }) {
           
           // Convert numeric day to day name if needed
           if (typeof dayKey === 'number' && dayKey >= 1 && dayKey <= 5) {
+            console.log(`Converting day ${dayKey} to ${days[dayKey - 1]}`);
             dayKey = days[dayKey - 1]; // Convert 1->Monday, 2->Tuesday, etc.
           }
           
@@ -91,6 +92,8 @@ function TimetableManager({ classSection }) {
       }
 
       console.log('Processed timetable object:', timetableObj);
+      console.log('Timetable object keys:', Object.keys(timetableObj));
+      console.log('Timetable object structure:', JSON.stringify(timetableObj, null, 2));
       setTimetable(timetableObj);
     } catch (err) {
       console.error('Error fetching timetable:', err);

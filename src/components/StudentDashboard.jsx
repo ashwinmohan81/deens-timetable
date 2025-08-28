@@ -197,8 +197,15 @@ function StudentDashboard({ user, onViewChange }) {
   };
 
   const handleViewTimetable = (classSection) => {
-    setSelectedClass(classSection);
-    setShowTimetable(true);
+    // If no class specified, use the first (and only) registered class
+    const classToShow = classSection || (registeredClasses.length > 0 ? registeredClasses[0].teachers.class_section : null);
+    
+    if (classToShow) {
+      setSelectedClass(classToShow);
+      setShowTimetable(true);
+    } else {
+      setError('No class selected to view timetable');
+    }
   };
 
   const handleBackToDashboard = () => {
@@ -229,9 +236,20 @@ function StudentDashboard({ user, onViewChange }) {
       <div className="dashboard-header">
         <h2>Student Dashboard</h2>
         <p>Welcome, {user.email}</p>
-        <button onClick={() => onViewChange('welcome')} className="btn-secondary">
-          Logout
-        </button>
+        <div className="header-actions">
+          {registeredClasses.length > 0 && (
+            <button 
+              onClick={() => handleViewTimetable()} 
+              className="btn-primary"
+              title="View your registered class timetable"
+            >
+              📅 View My Timetable
+            </button>
+          )}
+          <button onClick={() => onViewChange('welcome')} className="btn-secondary">
+            Logout
+          </button>
+        </div>
       </div>
 
       {message && (

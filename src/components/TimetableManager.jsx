@@ -242,60 +242,7 @@ function TimetableManager({ classSection }) {
     }
   };
 
-  const loadTimetable = async () => {
-    setLoading(true);
-    setMessage('');
-    try {
-      // Test database access first
-      console.log('🔍 Testing database access for class:', classSection);
-      
-      const { data, error } = await supabase
-        .from('timetable')
-        .select(`
-          *,
-          subjects(subject_name)
-        `)
-        .eq('class_section', classSection);
 
-      if (error) throw error;
-
-      console.log('Loading timetable data:', data);
-
-      const loadedTimetable = {};
-      if (data && data.length > 0) {
-        data.forEach(item => {
-          // Try different possible field names for day and period
-          let dayKey = item.day || item.day_of_week || item.day_name;
-          const periodKey = item.period || item.period_number || item.period_name;
-          
-          // Convert numeric day to day name if needed
-          if (typeof dayKey === 'number' && dayKey >= 1 && dayKey <= 5) {
-            dayKey = days[dayKey - 1]; // Convert 1->Monday, 2->Tuesday, etc.
-          }
-          
-          if (dayKey && periodKey) {
-            if (!loadedTimetable[dayKey]) {
-              loadedTimetable[dayKey] = {};
-            }
-            loadedTimetable[dayKey][periodKey] = {
-              id: item.id,
-              subject_id: item.subject_id,
-              subject_name: item.subjects?.subject_name || 'Unknown Subject'
-            };
-          }
-        });
-      }
-
-      console.log('Loaded timetable object:', loadedTimetable);
-      setTimetable(loadedTimetable);
-      setMessage('Timetable loaded successfully!');
-    } catch (err) {
-      console.error('Error loading timetable:', err);
-      setMessage('Failed to load timetable.');
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleCellChange = async (day, period, subjectId) => {
     if (!subjectId) return;
@@ -400,9 +347,6 @@ function TimetableManager({ classSection }) {
           <div className="timetable-actions">
             <button onClick={saveTimetable} disabled={saving} className="btn-primary">
               {saving ? 'Saving...' : 'Save Timetable'}
-            </button>
-            <button onClick={loadTimetable} disabled={loading} className="btn-secondary">
-              {loading ? 'Loading...' : 'Load Saved Timetable'}
             </button>
           </div>
           

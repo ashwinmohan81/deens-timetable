@@ -9,6 +9,9 @@ function Login({ onSwitchToRegister }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [debug, setDebug] = useState('');
+  const [showResetForm, setShowResetForm] = useState(false);
+  const [resetEmail, setResetEmail] = useState('');
+  const [resetMessage, setResetMessage] = useState('');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -56,12 +59,85 @@ function Login({ onSwitchToRegister }) {
     }
   };
 
+  const handlePasswordReset = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setResetMessage('');
+
+    try {
+      // First check if the email exists in our teachers table
+      const { data: teacher, error: teacherError } = await supabase
+        .from('teachers')
+        .select('email')
+        .eq('email', resetEmail)
+        .single();
+
+      if (teacherError || !teacher) {
+        setResetMessage('No teacher found with this email address.');
+        setLoading(false);
+        return;
+      }
+
+      // Send password reset email
+      const { error: resetError } = await supabase.auth.resetPasswordForEmail(resetEmail, {
+        redirectTo: window.location.origin + '/reset-password'
+      });
+
+      if (resetError) {
+        setResetMessage('Failed to send reset email: ' + resetError.message);
+      } else {
+        setResetMessage('Password reset email sent! Check your inbox.');
+        setResetEmail('');
+      }
+    } catch (err) {
+      setResetMessage('An error occurred. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleChange = (e) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value
     });
   };
+
+  if (showResetForm) {
+    return (
+      <div className="auth-container">
+        <h2>Reset Password</h2>
+        <form onSubmit={handlePasswordReset} className="auth-form">
+          <div className="form-group">
+            <label htmlFor="resetEmail">Email Address</label>
+            <input
+              type="email"
+              id="resetEmail"
+              value={resetEmail}
+              onChange={(e) => setResetEmail(e.target.value)}
+              required
+            />
+          </div>
+
+          {resetMessage && (
+            <div className={resetMessage.includes('sent') ? 'success' : 'error'}>
+              {resetMessage}
+            </div>
+          )}
+          
+          <button type="submit" disabled={loading} className="btn-primary">
+            {loading ? 'Sending...' : 'Send Reset Email'}
+          </button>
+        </form>
+        
+        <p className="auth-switch">
+          <button onClick={() => setShowResetForm(false)} className="btn-link">
+            Back to Login
+          </button>
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="auth-container">
@@ -99,12 +175,15 @@ function Login({ onSwitchToRegister }) {
         </button>
       </form>
       
-      <p className="auth-switch">
-        Don't have an account?{' '}
+      <div className="auth-actions">
+        <button onClick={() => setShowResetForm(true)} className="btn-link">
+          Forgot Password?
+        </button>
+        <span className="auth-divider">|</span>
         <button onClick={onSwitchToRegister} className="btn-link">
           Register here
         </button>
-      </p>
+      </div>
     </div>
   );
 }

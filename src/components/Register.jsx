@@ -6,6 +6,8 @@ function Register({ onSwitchToLogin }) {
     user_id: '',
     teacher_name: '',
     email: '',
+    class_grade: '',
+    class_section_letter: '',
     class_section: '',
     password: '',
     confirm_password: ''
@@ -188,15 +190,53 @@ function Register({ onSwitchToLogin }) {
 
         <div className="form-group">
           <label htmlFor="class_section">Class + Section</label>
-          <input
-            type="text"
-            id="class_section"
-            name="class_section"
-            placeholder="e.g., Class 5A, Class 6B"
-            value={formData.class_section}
-            onChange={handleChange}
-            required
-          />
+          <div className="class-section-selector">
+            <select
+              id="class_grade"
+              name="class_grade"
+              value={formData.class_grade || ''}
+              onChange={(e) => setFormData({
+                ...formData,
+                class_grade: e.target.value,
+                class_section: e.target.value + (formData.class_section_letter || '')
+              })}
+              required
+              className="grade-select"
+            >
+              <option value="">Select Grade</option>
+              {Array.from({length: 12}, (_, i) => i + 1).map(grade => (
+                <option key={grade} value={`Grade ${grade}`}>
+                  Grade {grade}
+                </option>
+              ))}
+            </select>
+            
+            <select
+              id="class_section_letter"
+              name="class_section_letter"
+              value={formData.class_section_letter || ''}
+              onChange={(e) => setFormData({
+                ...formData,
+                class_section_letter: e.target.value,
+                class_section: (formData.class_grade || '') + e.target.value
+              })}
+              required
+              className="section-select"
+              disabled={!formData.class_grade}
+            >
+              <option value="">Select Section</option>
+              {Array.from({length: 26}, (_, i) => String.fromCharCode(65 + i)).map(letter => (
+                <option key={letter} value={letter}>
+                  Section {letter}
+                </option>
+              ))}
+            </select>
+          </div>
+          {formData.class_grade && formData.class_section_letter && (
+            <div className="selected-class">
+              Selected: <strong>{formData.class_grade} {formData.class_section_letter}</strong>
+            </div>
+          )}
         </div>
 
         <div className="form-group">

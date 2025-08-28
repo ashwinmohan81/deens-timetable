@@ -107,34 +107,7 @@ function TeacherDashboard({ user }) {
     }
   };
 
-  const handleFixUserID = async () => {
-    try {
-      setLoading(true);
-      setError('');
-      setMessage('');
-      
-      // Update the teacher record to use the correct user_id
-      const { error } = await supabase
-        .from('teachers')
-        .update({ user_id: user.id })
-        .eq('id', user.id);
-      
-      if (error) {
-        setError('Failed to fix user ID: ' + error.message);
-      } else {
-        setMessage('User ID fixed successfully. Please refresh the page.');
-        // Refresh teacher data
-        setTimeout(() => {
-          fetchTeacherData();
-        }, 1000);
-      }
-    } catch (err) {
-      console.error('Error fixing user ID:', err);
-      setError('Failed to fix user ID: ' + err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
+
 
   const handleCheckNotifications = async () => {
     try {
@@ -193,9 +166,6 @@ function TeacherDashboard({ user }) {
           </button>
           <button onClick={handleCheckNotifications} className="btn-info" disabled={loading}>
             📊 Check Notifications
-          </button>
-          <button onClick={handleFixUserID} className="btn-warning" disabled={loading}>
-            🔧 Fix User ID
           </button>
           <button onClick={handleUnregister} className="btn-danger">
             Unregister

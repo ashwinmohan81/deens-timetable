@@ -143,13 +143,11 @@ function TimetableManager({ classSection }) {
   };
 
   const getSubjectName = (day, period) => {
-    // Convert day number to day name (1 = Monday, 2 = Tuesday, etc.)
-    const dayName = days[day - 1];
-    
+    // The day parameter is already the day name (Monday, Tuesday, etc.)
     // Try to get subject from the timetable object
-    const subjectData = timetable[dayName]?.[period] || timetable[day]?.[period];
+    const subjectData = timetable[day]?.[period];
     
-    console.log(`Looking for subject: day=${dayName}, period=${period}, found=${subjectData?.subject_name || 'none'}`);
+    console.log(`Looking for subject: day=${day}, period=${period}, found=${subjectData?.subject_name || 'none'}`);
     
     return subjectData?.subject_name || '';
   };
@@ -187,12 +185,40 @@ function TimetableManager({ classSection }) {
     setSaving(true);
     setMessage('');
     try {
-      const { error } = await supabase
-        .from('timetable')
-        .update(timetable)
-        .eq('class_section', classSection);
+      // Convert timetable object to array of entries for saving
+      const entriesToSave = [];
+      
+      Object.keys(timetable).forEach(day => {
+        Object.keys(timetable[day]).forEach(period => {
+          const entry = timetable[day][period];
+          if (entry && entry.subject_id) {
+            entriesToSave.push({
+              class_section: classSection,
+              day: day,
+              period: period,
+              subject_id: entry.subject_id
+            });
+          }
+        });
+      });
 
-      if (error) throw error;
+      console.log('Saving timetable entries:', entriesToSave);
+
+      if (entriesToSave.length > 0) {
+        // First clear existing entries for this class
+        await supabase
+          .from('timetable')
+          .delete()
+          .eq('class_section', classSection);
+
+        // Then insert new entries
+        const { error } = await supabase
+          .from('timetable')
+          .insert(entriesToSave);
+
+        if (error) throw error;
+      }
+
       setMessage('Timetable saved successfully!');
     } catch (err) {
       console.error('Error saving timetable:', err);
@@ -259,7 +285,7 @@ function TimetableManager({ classSection }) {
       const subject = subjects.find(s => s.id === subjectId);
       
       // Check if this slot is already occupied
-      const existingSlot = timetable[`${day}_${period}`];
+      const existingSlot = timetable[day]?.[period];
       
       if (existingSlot) {
         // Update existing slot
@@ -331,7 +357,7 @@ function TimetableManager({ classSection }) {
                   {days.map(day => (
                     <td key={day} className={`timetable-cell ${getDayClass(day)}`}>
                       <select
-                        value={timetable[`${day}_${period}`] || ''}
+                        value={getSubjectName(day, period) || ''}
                         onChange={(e) => handleCellChange(day, period, e.target.value)}
                         className="subject-select"
                       >

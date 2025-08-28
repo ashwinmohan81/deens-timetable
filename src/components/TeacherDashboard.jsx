@@ -20,7 +20,7 @@ function TeacherDashboard({ user }) {
       const { data, error } = await supabase
         .from('teachers')
         .select('*')
-        .eq('email', user.email)
+        .eq('user_id', user.id)
         .single();
 
       if (error) throw error;

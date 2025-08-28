@@ -41,21 +41,7 @@ function TeacherDashboard({ user }) {
         console.error('❌ Error fetching teacher by user_id:', error);
         console.log('🔍 User ID being searched:', user.id);
         
-        // Try alternative approach - search by email
-        const { data: emailData, error: emailError } = await supabase
-          .from('teachers')
-          .select('*')
-          .eq('email', user.email)
-          .single();
-          
-        if (emailError) {
-          console.error('❌ Error fetching teacher by email:', emailError);
-        } else {
-          console.log('✅ Found teacher by email:', emailData);
-          setTeacher(emailData);
-          return;
-        }
-        
+        // No fallback needed - user_id should work
         throw error;
       }
       
@@ -131,7 +117,7 @@ function TeacherDashboard({ user }) {
       const { error } = await supabase
         .from('teachers')
         .update({ user_id: user.id })
-        .eq('email', user.email);
+        .eq('id', user.id);
       
       if (error) {
         setError('Failed to fix user ID: ' + error.message);

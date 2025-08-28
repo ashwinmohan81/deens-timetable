@@ -428,11 +428,6 @@ main {
 .class-selector {
   text-align: center;
   margin-bottom: 2rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 15px;
-  flex-wrap: wrap;
 }
 
 .class-selector label {
@@ -456,21 +451,7 @@ main {
   border-color: #667eea;
 }
 
-.refresh-btn {
-  padding: 8px 16px;
-  font-size: 14px;
-  background: #f0f0f0;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: all 0.2s;
-  white-space: nowrap;
-}
 
-.refresh-btn:hover {
-  background: #e0e0e0;
-  border-color: #ccc;
-}
 
 .timetable-info {
   text-align: center;

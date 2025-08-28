@@ -176,13 +176,6 @@ function ViewTimetable() {
             </option>
           ))}
         </select>
-        <button 
-          onClick={fetchClasses} 
-          className="btn-secondary refresh-btn"
-          title="Refresh class list"
-        >
-          🔄 Refresh
-        </button>
       </div>
 
       {selectedClass && (

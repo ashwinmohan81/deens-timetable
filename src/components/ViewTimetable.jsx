@@ -7,7 +7,7 @@ function ViewTimetable({ selectedClassOverride }) {
   const [timetable, setTimetable] = useState({});
   const [teacherName, setTeacherName] = useState('');
   const [loading, setLoading] = useState(false);
-  const [currentWeek] = useState({});
+  const [currentWeek, setCurrentWeek] = useState({});
 
   const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
   const periods = [1, 2, 3, 4, 5, 6, 7, 8];

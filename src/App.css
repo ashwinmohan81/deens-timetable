@@ -483,6 +483,111 @@ main {
   font-style: italic;
 }
 
+/* Student Dashboard */
+.student-dashboard {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.student-dashboard .dashboard-header {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.student-dashboard .dashboard-header h2 {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+  color: #333;
+}
+
+.student-dashboard .dashboard-content {
+  display: grid;
+  gap: 3rem;
+}
+
+.registered-classes,
+.available-classes {
+  background: #fff;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.registered-classes h3,
+.available-classes h3 {
+  font-size: 1.5rem;
+  margin-bottom: 1.5rem;
+  color: #333;
+  text-align: center;
+}
+
+.classes-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+.class-card {
+  background: #f8f9fa;
+  padding: 1.5rem;
+  border-radius: 8px;
+  border: 2px solid #e9ecef;
+  transition: all 0.3s ease;
+}
+
+.class-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.class-card h4 {
+  font-size: 1.3rem;
+  margin-bottom: 0.5rem;
+  color: #333;
+}
+
+.class-card p {
+  color: #666;
+  margin-bottom: 0.5rem;
+}
+
+.class-card.available {
+  border-color: #28a745;
+  background: #f8fff9;
+}
+
+.class-actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.no-classes {
+  text-align: center;
+  color: #666;
+  font-style: italic;
+  padding: 2rem;
+}
+
+.student-timetable-view {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.timetable-header {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+
+.timetable-header h2 {
+  margin: 0;
+  color: #333;
+}
+
 /* Welcome Section */
 .welcome-section {
   text-align: center;

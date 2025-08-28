@@ -80,7 +80,8 @@ function StudentDashboard({ user, onViewChange }) {
           *,
           teachers(class_section, teacher_name)
         `)
-        .eq('student_id', studentId);
+        .eq('student_id', studentId)
+        .order('registered_at', { ascending: false });
 
       if (error) {
         console.error('Supabase error fetching registrations:', error);
@@ -102,10 +103,28 @@ function StudentDashboard({ user, onViewChange }) {
       
       console.log('Attempting to register for class:', classSection);
       console.log('Student ID:', student.id);
+      console.log('Current registered classes:', registeredClasses);
       
-      // Check if already registered
+      // Check if already registered - also check the database directly
+      const { data: existingRegistration, error: checkError } = await supabase
+        .from('student_registrations')
+        .select('*')
+        .eq('student_id', student.id)
+        .eq('class_section', classSection)
+        .single();
+
+      if (checkError && checkError.code !== 'PGRST116') {
+        console.error('Error checking existing registration:', checkError);
+      }
+
+      if (existingRegistration) {
+        setError('You are already registered for this class!');
+        return;
+      }
+
+      // Also check local state
       const isRegistered = registeredClasses.some(
-        reg => reg.teachers?.class_section === classSection
+        reg => reg.class_section === classSection
       );
 
       if (isRegistered) {
@@ -216,7 +235,16 @@ function StudentDashboard({ user, onViewChange }) {
 
       <div className="dashboard-content">
         <div className="registered-classes">
-          <h3>Your Registered Classes</h3>
+          <div className="section-header">
+            <h3>Your Registered Classes</h3>
+            <button 
+              onClick={() => fetchRegisteredClasses(student.id)} 
+              className="btn-secondary refresh-btn"
+              title="Refresh registrations"
+            >
+              🔄 Refresh
+            </button>
+          </div>
           {registeredClasses.length === 0 ? (
             <p className="no-classes">You haven't registered for any classes yet.</p>
           ) : (

@@ -127,6 +127,14 @@ function TimetableManager({ classSection }) {
     return subjectData?.subject_name || '';
   };
 
+  const getSubjectId = (day, period) => {
+    // The day parameter is already the day name (Monday, Tuesday, etc.)
+    // Try to get subject ID from the timetable object
+    const subjectData = timetable[day]?.[period];
+    
+    return subjectData?.subject_id || '';
+  };
+
   const calculateCurrentWeek = () => {
     const today = new Date();
     const firstDayOfWeek = new Date(today);
@@ -337,7 +345,7 @@ function TimetableManager({ classSection }) {
                   {days.map(day => (
                     <td key={day} className={`timetable-cell ${getDayClass(day)}`}>
                       <select
-                        value={getSubjectName(day, period) || ''}
+                        value={getSubjectId(day, period) || ''}
                         onChange={(e) => handleCellChange(day, period, e.target.value)}
                         className="subject-select"
                       >

@@ -9,6 +9,8 @@ function StudentDashboard({ user, onViewChange }) {
   const [loading, setLoading] = useState(true);
   const [selectedClass, setSelectedClass] = useState('');
   const [showTimetable, setShowTimetable] = useState(false);
+  const [message, setMessage] = useState('');
+  const [error, setError] = useState('');
 
   useEffect(() => {
     fetchStudentData();
@@ -70,6 +72,8 @@ function StudentDashboard({ user, onViewChange }) {
 
   const fetchRegisteredClasses = async (studentId) => {
     try {
+      console.log('Fetching registered classes for student:', studentId);
+      
       const { data, error } = await supabase
         .from('student_registrations')
         .select(`
@@ -78,7 +82,12 @@ function StudentDashboard({ user, onViewChange }) {
         `)
         .eq('student_id', studentId);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase error fetching registrations:', error);
+        throw error;
+      }
+      
+      console.log('Registered classes data:', data);
       setRegisteredClasses(data || []);
     } catch (err) {
       console.error('Error fetching registered classes:', err);
@@ -88,34 +97,45 @@ function StudentDashboard({ user, onViewChange }) {
   const handleClassRegistration = async (classSection) => {
     try {
       setLoading(true);
+      setError('');
+      setMessage('');
+      
+      console.log('Attempting to register for class:', classSection);
+      console.log('Student ID:', student.id);
       
       // Check if already registered
       const isRegistered = registeredClasses.some(
-        reg => reg.teachers.class_section === classSection
+        reg => reg.teachers?.class_section === classSection
       );
 
       if (isRegistered) {
-        alert('You are already registered for this class!');
+        setError('You are already registered for this class!');
         return;
       }
 
       // Register for class
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('student_registrations')
         .insert({
           student_id: student.id,
           class_section: classSection,
           registered_at: new Date().toISOString()
-        });
+        })
+        .select();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase error:', error);
+        throw error;
+      }
+
+      console.log('Registration successful:', data);
 
       // Refresh registered classes
       await fetchRegisteredClasses(student.id);
       setMessage('Successfully registered for ' + classSection);
     } catch (err) {
       console.error('Error registering for class:', err);
-      setError('Failed to register for class');
+      setError('Failed to register for class: ' + err.message);
     } finally {
       setLoading(false);
     }
@@ -181,6 +201,18 @@ function StudentDashboard({ user, onViewChange }) {
           Logout
         </button>
       </div>
+
+      {message && (
+        <div className="success-message">
+          {message}
+        </div>
+      )}
+
+      {error && (
+        <div className="error-message">
+          {error}
+        </div>
+      )}
 
       <div className="dashboard-content">
         <div className="registered-classes">

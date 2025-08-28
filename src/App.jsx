@@ -70,14 +70,28 @@ function App() {
         setUserType('student');
         setView('student-dashboard');
       } else {
-        setUserType('teacher');
-        setView('dashboard');
+        // If no specific type detected, check if they have student metadata
+        // This handles the case where someone registers as a student
+        if (user.user_metadata?.user_type === 'student') {
+          setUserType('student');
+          setView('student-dashboard');
+        } else {
+          // Default to teacher for existing users without clear type
+          setUserType('teacher');
+          setView('dashboard');
+        }
       }
     } catch (err) {
       console.error('Error detecting user type:', err);
-      // Default to teacher for existing users
-      setUserType('teacher');
-      setView('dashboard');
+      // Check user metadata for student type
+      if (user.user_metadata?.user_type === 'student') {
+        setUserType('student');
+        setView('student-dashboard');
+      } else {
+        // Default to teacher for existing users
+        setUserType('teacher');
+        setView('dashboard');
+      }
     }
   };
 

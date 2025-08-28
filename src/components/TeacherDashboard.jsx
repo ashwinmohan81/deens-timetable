@@ -17,16 +17,52 @@ function TeacherDashboard({ user }) {
 
   const fetchTeacherData = async () => {
     try {
+      console.log('🔍 Fetching teacher data for user:', user.id, 'email:', user.email);
+      
+      // First, let's check what's in the teachers table
+      const { data: allTeachers, error: listError } = await supabase
+        .from('teachers')
+        .select('*');
+      
+      if (listError) {
+        console.error('❌ Error listing teachers:', listError);
+      } else {
+        console.log('📋 All teachers in database:', allTeachers);
+      }
+      
+      // Now try to fetch the specific teacher
       const { data, error } = await supabase
         .from('teachers')
         .select('*')
         .eq('user_id', user.id)
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('❌ Error fetching teacher by user_id:', error);
+        console.log('🔍 User ID being searched:', user.id);
+        
+        // Try alternative approach - search by email
+        const { data: emailData, error: emailError } = await supabase
+          .from('teachers')
+          .select('*')
+          .eq('email', user.email)
+          .single();
+          
+        if (emailError) {
+          console.error('❌ Error fetching teacher by email:', emailError);
+        } else {
+          console.log('✅ Found teacher by email:', emailData);
+          setTeacher(emailData);
+          return;
+        }
+        
+        throw error;
+      }
+      
+      console.log('✅ Teacher data found:', data);
       setTeacher(data);
     } catch (err) {
-      console.error('Error fetching teacher data:', err);
+      console.error('❌ Error in fetchTeacherData:', err);
     } finally {
       setLoading(false);
     }
@@ -79,7 +115,36 @@ function TeacherDashboard({ user }) {
       }
     } catch (err) {
       console.error('Error processing emails:', err);
-      setError('Failed to process emails: ' + err.message);
+      setError('Failed to process emails: ' + result.error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleFixUserID = async () => {
+    try {
+      setLoading(true);
+      setError('');
+      setMessage('');
+      
+      // Update the teacher record to use the correct user_id
+      const { error } = await supabase
+        .from('teachers')
+        .update({ user_id: user.id })
+        .eq('email', user.email);
+      
+      if (error) {
+        setError('Failed to fix user ID: ' + error.message);
+      } else {
+        setMessage('User ID fixed successfully. Please refresh the page.');
+        // Refresh teacher data
+        setTimeout(() => {
+          fetchTeacherData();
+        }, 1000);
+      }
+    } catch (err) {
+      console.error('Error fixing user ID:', err);
+      setError('Failed to fix user ID: ' + err.message);
     } finally {
       setLoading(false);
     }
@@ -101,6 +166,9 @@ function TeacherDashboard({ user }) {
         <div className="header-actions">
           <button onClick={handleProcessEmails} className="btn-secondary" disabled={loading}>
             📧 Process Email Notifications
+          </button>
+          <button onClick={handleFixUserID} className="btn-warning" disabled={loading}>
+            🔧 Fix User ID
           </button>
           <button onClick={handleUnregister} className="btn-danger">
             Unregister

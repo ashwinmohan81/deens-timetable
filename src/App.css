@@ -201,6 +201,21 @@ main {
   transform: translateY(-1px);
 }
 
+.btn-warning {
+  background: #ffc107;
+  color: #212529;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-warning:hover {
+  background: #e0a800;
+  transform: translateY(-1px);
+}
+
 .dashboard-tabs {
   display: flex;
   background: #f8f9fa;

@@ -106,8 +106,8 @@ function Register({ onSwitchToLogin }) {
       const { error: teacherError } = await supabase
         .from('teachers')
         .insert({
-          id: authData.user.id, // Use the auth user ID
-          user_id: formData.user_id,
+          id: authData.user.id, // Use the auth user ID as primary key
+          user_id: authData.user.id, // Link to auth user ID (not the manual User ID)
           teacher_name: formData.teacher_name,
           email: formData.email,
           class_section: formData.class_section,

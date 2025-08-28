@@ -15,7 +15,47 @@ function StudentDashboard({ user, onViewChange }) {
   useEffect(() => {
     fetchStudentData();
     fetchAvailableClasses();
+    
+    // Test if the student_registrations table exists
+    testDatabaseConnection();
   }, [user]);
+
+  const testDatabaseConnection = async () => {
+    try {
+      console.log('Testing database connection...');
+      
+      // Test if student_registrations table exists
+      const { data, error } = await supabase
+        .from('student_registrations')
+        .select('*')
+        .limit(1);
+      
+      if (error) {
+        console.error('❌ student_registrations table error:', error);
+        if (error.code === '42P01') {
+          console.error('❌ Table does not exist! Run the student-schema.sql first.');
+        }
+      } else {
+        console.log('✅ student_registrations table exists and accessible');
+        console.log('Sample data:', data);
+      }
+      
+      // Test if students table exists
+      const { data: studentsData, error: studentsError } = await supabase
+        .from('students')
+        .select('*')
+        .limit(1);
+      
+      if (studentsError) {
+        console.error('❌ students table error:', studentsError);
+      } else {
+        console.log('✅ students table exists and accessible');
+      }
+      
+    } catch (err) {
+      console.error('Database connection test failed:', err);
+    }
+  };
 
   const fetchStudentData = async () => {
     try {
@@ -74,22 +114,38 @@ function StudentDashboard({ user, onViewChange }) {
     try {
       console.log('Fetching registered classes for student:', studentId);
       
+      // First, let's check if the student_registrations table exists and has data
+      const { data: tableCheck, error: tableError } = await supabase
+        .from('student_registrations')
+        .select('*')
+        .limit(5);
+
+      console.log('Table check result:', { tableCheck, tableError });
+      
+      // Now fetch the specific student's registrations
       const { data, error } = await supabase
         .from('student_registrations')
-        .select(`
-          *,
-          teachers(class_section, teacher_name)
-        `)
-        .eq('student_id', studentId)
-        .order('registered_at', { ascending: false });
+        .select('*')
+        .eq('student_id', studentId);
 
       if (error) {
         console.error('Supabase error fetching registrations:', error);
         throw error;
       }
       
-      console.log('Registered classes data:', data);
-      setRegisteredClasses(data || []);
+      console.log('Raw registrations data:', data);
+      
+      // Transform the data to match the expected structure
+      const transformedData = data.map(registration => ({
+        ...registration,
+        teachers: {
+          class_section: registration.class_section,
+          teacher_name: 'Unknown Teacher' // We'll get this from teachers table if needed
+        }
+      }));
+      
+      console.log('Transformed registrations data:', transformedData);
+      setRegisteredClasses(transformedData || []);
     } catch (err) {
       console.error('Error fetching registered classes:', err);
     }
@@ -232,6 +288,24 @@ function StudentDashboard({ user, onViewChange }) {
           {error}
         </div>
       )}
+
+      {/* Debug section - remove this after fixing */}
+      <div className="debug-section" style={{ background: '#f0f0f0', padding: '1rem', margin: '1rem 0', borderRadius: '6px' }}>
+        <h4>Debug Info:</h4>
+        <p><strong>Student ID:</strong> {student?.id || 'Not set'}</p>
+        <p><strong>Student Email:</strong> {user?.email || 'Not set'}</p>
+        <p><strong>Registered Classes Count:</strong> {registeredClasses.length}</p>
+        <p><strong>Available Classes Count:</strong> {availableClasses.length}</p>
+        <button 
+          onClick={() => {
+            console.log('Current state:', { student, registeredClasses, availableClasses });
+            fetchRegisteredClasses(student?.id);
+          }} 
+          className="btn-secondary"
+        >
+          Debug: Log State & Refresh
+        </button>
+      </div>
 
       <div className="dashboard-content">
         <div className="registered-classes">

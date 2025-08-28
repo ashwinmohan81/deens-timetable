@@ -1,4 +1,5 @@
 import { emailService } from '../services/emailService';
+import { supabase } from '../config/supabase';
 
 // Function to process all pending email notifications
 export const processAllPendingEmails = async () => {

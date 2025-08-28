@@ -2,11 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '../config/supabase';
 import SubjectManager from './SubjectManager';
 import TimetableManager from './TimetableManager';
+import { processAllPendingEmails } from '../utils/emailProcessor';
 
 function TeacherDashboard({ user }) {
   const [teacher, setTeacher] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('subjects'); // subjects, timetable
+  const [activeTab, setActiveTab] = useState('subjects');
+  const [message, setMessage] = useState('');
+  const [error, setError] = useState(''); // subjects, timetable
 
   useEffect(() => {
     fetchTeacherData();
@@ -61,6 +64,27 @@ function TeacherDashboard({ user }) {
     }
   };
 
+  const handleProcessEmails = async () => {
+    try {
+      setLoading(true);
+      setError('');
+      setMessage('');
+      
+      const result = await processAllPendingEmails();
+      
+      if (result.success) {
+        setMessage(`Successfully processed ${result.processed} email notifications`);
+      } else {
+        setError('Failed to process emails: ' + result.error);
+      }
+    } catch (err) {
+      console.error('Error processing emails:', err);
+      setError('Failed to process emails: ' + err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   if (loading) {
     return <div className="loading">Loading...</div>;
   }
@@ -74,10 +98,27 @@ function TeacherDashboard({ user }) {
       <div className="dashboard-header">
         <h2>Welcome, {teacher.teacher_name}</h2>
         <p>Class: {teacher.class_section}</p>
-        <button onClick={handleUnregister} className="btn-danger">
-          Unregister
-        </button>
+        <div className="header-actions">
+          <button onClick={handleProcessEmails} className="btn-secondary" disabled={loading}>
+            📧 Process Email Notifications
+          </button>
+          <button onClick={handleUnregister} className="btn-danger">
+            Unregister
+          </button>
+        </div>
       </div>
+
+      {message && (
+        <div className="success-message">
+          {message}
+        </div>
+      )}
+
+      {error && (
+        <div className="error-message">
+          {error}
+        </div>
+      )}
 
       <div className="dashboard-tabs">
         <button

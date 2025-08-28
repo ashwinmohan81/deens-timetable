@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../config/supabase';
 import ViewTimetable from './ViewTimetable';
+import NotificationCenter from './NotificationCenter';
 
 function StudentDashboard({ user, onViewChange }) {
   const [student, setStudent] = useState(null);
@@ -11,6 +12,7 @@ function StudentDashboard({ user, onViewChange }) {
   const [showTimetable, setShowTimetable] = useState(false);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
+  const [showNotifications, setShowNotifications] = useState(false);
 
   useEffect(() => {
     fetchStudentData();
@@ -244,9 +246,20 @@ function StudentDashboard({ user, onViewChange }) {
       <div className="dashboard-header">
         <h2>Student Dashboard</h2>
         <p>Welcome, {user.email}</p>
-        <button onClick={() => onViewChange('welcome')} className="btn-secondary">
-          Logout
-        </button>
+        <div className="header-actions">
+          {registeredClasses.length > 0 && (
+            <button 
+              onClick={() => setShowNotifications(true)} 
+              className="btn-primary notification-btn"
+              title="View notifications and timetable changes"
+            >
+              📢 Notifications
+            </button>
+          )}
+          <button onClick={() => onViewChange('welcome')} className="btn-secondary">
+            Logout
+          </button>
+        </div>
       </div>
 
       {message && (
@@ -330,6 +343,14 @@ function StudentDashboard({ user, onViewChange }) {
           )}
         </div>
       </div>
+      
+      {/* Notification Center Modal */}
+      {showNotifications && (
+        <NotificationCenter 
+          studentId={student?.id} 
+          onClose={() => setShowNotifications(false)} 
+        />
+      )}
     </div>
   );
 }

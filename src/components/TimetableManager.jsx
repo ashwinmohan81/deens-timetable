@@ -175,10 +175,13 @@ function TimetableManager({ classSection }) {
         Object.keys(timetable[day]).forEach(period => {
           const entry = timetable[day][period];
           if (entry && entry.subject_id) {
+            // Convert day name back to numeric value for database
+            const dayNumber = days.indexOf(day) + 1; // Monday=1, Tuesday=2, etc.
+            
             entriesToSave.push({
               class_section: classSection,
-              day: day,
-              period: period,
+              day_of_week: dayNumber,
+              period_number: period,
               subject_id: entry.subject_id
             });
           }
@@ -289,8 +292,8 @@ function TimetableManager({ classSection }) {
           .from('timetable')
           .insert({
             class_section: classSection,
-            day: day,
-            period: period,
+            day_of_week: days.indexOf(day) + 1, // Convert day name to number
+            period_number: period,
             subject_id: subjectId
           });
 

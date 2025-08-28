@@ -167,7 +167,11 @@ function TimetableManager({ classSection }) {
   const saveTimetable = async () => {
     setSaving(true);
     setMessage('');
+    setError('');
+    
     try {
+      console.log('🔄 Starting timetable save for class:', classSection);
+      
       // Convert timetable object to array of entries for saving
       const entriesToSave = [];
       
@@ -188,27 +192,48 @@ function TimetableManager({ classSection }) {
         });
       });
 
-      console.log('Saving timetable entries:', entriesToSave);
+      console.log('📝 Entries to save:', entriesToSave);
+      console.log('📊 Total entries:', entriesToSave.length);
 
       if (entriesToSave.length > 0) {
         // First clear existing entries for this class
-        await supabase
+        console.log('🗑️ Deleting existing entries for class:', classSection);
+        const { error: deleteError } = await supabase
           .from('timetable')
           .delete()
           .eq('class_section', classSection);
 
-        // Then insert new entries
-        const { error } = await supabase
-          .from('timetable')
-          .insert(entriesToSave);
+        if (deleteError) {
+          console.error('❌ Delete error:', deleteError);
+          throw new Error(`Failed to delete existing entries: ${deleteError.message}`);
+        }
+        
+        console.log('✅ Existing entries deleted successfully');
 
-        if (error) throw error;
+        // Then insert new entries
+        console.log('➕ Inserting new entries...');
+        const { data: insertData, error: insertError } = await supabase
+          .from('timetable')
+          .insert(entriesToSave)
+          .select();
+
+        if (insertError) {
+          console.error('❌ Insert error:', insertError);
+          throw new Error(`Failed to insert new entries: ${insertError.message}`);
+        }
+        
+        console.log('✅ New entries inserted successfully:', insertData);
+      } else {
+        console.log('⚠️ No entries to save');
       }
 
       setMessage('Timetable saved successfully!');
+      console.log('🎉 Timetable save completed successfully');
     } catch (err) {
-      console.error('Error saving timetable:', err);
-      setMessage('Failed to save timetable.');
+      console.error('❌ Error saving timetable:', err);
+      const errorMessage = err.message || 'Unknown error occurred';
+      setError(`Failed to save timetable: ${errorMessage}`);
+      setMessage('');
     } finally {
       setSaving(false);
     }
@@ -218,6 +243,9 @@ function TimetableManager({ classSection }) {
     setLoading(true);
     setMessage('');
     try {
+      // Test database access first
+      console.log('🔍 Testing database access for class:', classSection);
+      
       const { data, error } = await supabase
         .from('timetable')
         .select(`
@@ -376,8 +404,14 @@ function TimetableManager({ classSection }) {
           </div>
           
           {message && (
-            <div className={message.includes('success') ? 'success' : 'error'}>
+            <div className="success-message">
               {message}
+            </div>
+          )}
+          
+          {error && (
+            <div className="error-message">
+              {error}
             </div>
           )}
         </div>

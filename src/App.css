@@ -451,6 +451,13 @@ main {
   border-color: #667eea;
 }
 
+.auto-selected-note {
+  color: #28a745;
+  font-size: 0.9rem;
+  margin-top: 0.5rem;
+  font-style: italic;
+}
+
 
 
 .timetable-info {
@@ -495,13 +502,7 @@ main {
   margin-bottom: 3rem;
 }
 
-.student-dashboard .header-actions {
-  display: flex;
-  gap: 1rem;
-  justify-content: center;
-  margin-top: 1rem;
-  flex-wrap: wrap;
-}
+
 
 .student-dashboard .dashboard-header h2 {
   font-size: 2.5rem;

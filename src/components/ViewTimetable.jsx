@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../config/supabase';
 
-function ViewTimetable() {
+function ViewTimetable({ selectedClassOverride }) {
   const [classes, setClasses] = useState([]);
   const [selectedClass, setSelectedClass] = useState('');
   const [timetable, setTimetable] = useState({});
   const [teacherName, setTeacherName] = useState('');
   const [loading, setLoading] = useState(false);
-  const [currentWeek, setCurrentWeek] = useState({});
+  const [currentWeek] = useState({});
 
   const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
   const periods = [1, 2, 3, 4, 5, 6, 7, 8];
@@ -15,6 +15,13 @@ function ViewTimetable() {
   useEffect(() => {
     fetchClasses();
   }, []);
+
+  // Auto-select class if provided via prop
+  useEffect(() => {
+    if (selectedClassOverride && selectedClassOverride !== selectedClass) {
+      setSelectedClass(selectedClassOverride);
+    }
+  }, [selectedClassOverride, selectedClass]);
 
   useEffect(() => {
     if (selectedClass) {
@@ -162,12 +169,15 @@ function ViewTimetable() {
       <h2>View Timetable</h2>
       
       <div className="class-selector">
-        <label htmlFor="class-select">Select Class:</label>
+        <label htmlFor="class-select">
+          {selectedClassOverride ? 'Class:' : 'Select Class:'}
+        </label>
         <select
           id="class-select"
           value={selectedClass}
           onChange={(e) => setSelectedClass(e.target.value)}
           className="class-select"
+          disabled={selectedClassOverride ? true : false}
         >
           <option value="">Choose a class...</option>
           {classes.map(className => (
@@ -176,6 +186,11 @@ function ViewTimetable() {
             </option>
           ))}
         </select>
+        {selectedClassOverride && (
+          <p className="auto-selected-note">
+            ✓ Class automatically selected from your registration
+          </p>
+        )}
       </div>
 
       {selectedClass && (

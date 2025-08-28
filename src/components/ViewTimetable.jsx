@@ -41,6 +41,8 @@ function ViewTimetable() {
   const fetchTimetable = async () => {
     setLoading(true);
     try {
+      console.log('Fetching timetable for class:', selectedClass);
+      
       const { data, error } = await supabase
         .from('timetable')
         .select(`
@@ -49,17 +51,34 @@ function ViewTimetable() {
         `)
         .eq('class_section', selectedClass);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase error:', error);
+        throw error;
+      }
 
-      // Convert to timetable object
+      console.log('Raw timetable data from database:', data);
+
+      // Convert to timetable object - handle different possible data structures
       const timetableObj = {};
-      data.forEach(item => {
-        if (!timetableObj[item.day]) {
-          timetableObj[item.day] = {};
-        }
-        timetableObj[item.day][item.period] = item.subjects.subject_name;
-      });
+      if (data && data.length > 0) {
+        data.forEach(item => {
+          console.log('Processing item:', item);
+          
+          // Try different possible field names for day and period
+          const dayKey = item.day || item.day_of_week || item.day_name;
+          const periodKey = item.period || item.period_number || item.period_name;
+          
+          if (dayKey && periodKey) {
+            if (!timetableObj[dayKey]) {
+              timetableObj[dayKey] = {};
+            }
+            // Use subject name from the joined subjects table
+            timetableObj[dayKey][periodKey] = item.subjects?.subject_name || 'Unknown Subject';
+          }
+        });
+      }
 
+      console.log('Processed timetable object:', timetableObj);
       setTimetable(timetableObj);
     } catch (error) {
       console.error('Error fetching timetable:', error);
@@ -104,6 +123,7 @@ function ViewTimetable() {
   };
 
   const formatDate = (date) => {
+    if (!date) return 'N/A';
     return date.toLocaleDateString('en-US', { 
       month: 'short', 
       day: 'numeric',
@@ -112,6 +132,7 @@ function ViewTimetable() {
   };
 
   const getDayClass = (day) => {
+    if (!currentWeek[day]) return '';
     const today = new Date();
     const dayDate = currentWeek[day];
     if (dayDate && dayDate.toDateString() === today.toDateString()) {
@@ -121,7 +142,15 @@ function ViewTimetable() {
   };
 
   const getSubjectName = (day, period) => {
-    return timetable[day]?.[period] || '-';
+    // Convert day number to day name (1 = Monday, 2 = Tuesday, etc.)
+    const dayName = days[day - 1];
+    
+    // Try to get subject from the timetable object
+    const subject = timetable[dayName]?.[period] || timetable[day]?.[period];
+    
+    console.log(`Looking for subject: day=${dayName}, period=${period}, found=${subject}`);
+    
+    return subject || '-';
   };
 
   return (
@@ -149,6 +178,11 @@ function ViewTimetable() {
         <div className="timetable-info">
           <h3>{selectedClass} Timetable</h3>
           <p><strong>Class Teacher:</strong> {teacherName}</p>
+          
+          <div className="current-week-info">
+            <h4>Current Week: {currentWeek.Monday ? formatDate(currentWeek.Monday) : 'N/A'} - {currentWeek.Friday ? formatDate(currentWeek.Friday) : 'N/A'}</h4>
+            <p className="week-note">Dates automatically update weekly</p>
+          </div>
         </div>
       )}
 
@@ -157,7 +191,7 @@ function ViewTimetable() {
           <table className="timetable-table view-table">
             <thead>
               <tr>
-                <th>Period</th>
+                <th className="period-header">Period</th>
                 {days.map(day => (
                   <th key={day} className={getDayClass(day)}>
                     {day} ({formatDate(currentWeek[day])})
@@ -168,7 +202,7 @@ function ViewTimetable() {
             <tbody>
               {periods.map(period => (
                 <tr key={period}>
-                  <td className="period-label">Period {period}</td>
+                  <td className="period-cell">{period}</td>
                   {days.map((day, dayIndex) => {
                     const dayNumber = dayIndex + 1;
                     return (

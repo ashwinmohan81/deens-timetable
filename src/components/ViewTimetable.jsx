@@ -7,6 +7,7 @@ function ViewTimetable() {
   const [timetable, setTimetable] = useState({});
   const [teacherName, setTeacherName] = useState('');
   const [loading, setLoading] = useState(false);
+  const [currentWeek, setCurrentWeek] = useState({});
 
   const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
   const periods = [1, 2, 3, 4, 5, 6, 7, 8];
@@ -19,6 +20,7 @@ function ViewTimetable() {
     if (selectedClass) {
       fetchTimetable();
       fetchTeacherName();
+      calculateCurrentWeek();
     }
   }, [selectedClass]);
 
@@ -37,8 +39,6 @@ function ViewTimetable() {
   };
 
   const fetchTimetable = async () => {
-    if (!selectedClass) return;
-
     setLoading(true);
     try {
       const { data, error } = await supabase
@@ -47,33 +47,28 @@ function ViewTimetable() {
           *,
           subjects(subject_name)
         `)
-        .eq('class_section', selectedClass)
-        .order('day_of_week, period_number');
+        .eq('class_section', selectedClass);
 
       if (error) throw error;
 
       // Convert to timetable object
       const timetableObj = {};
       data.forEach(item => {
-        if (!timetableObj[item.day_of_week]) {
-          timetableObj[item.day_of_week] = {};
+        if (!timetableObj[item.day]) {
+          timetableObj[item.day] = {};
         }
-        timetableObj[item.day_of_week][item.period_number] = {
-          subject_name: item.subjects.subject_name
-        };
+        timetableObj[item.day][item.period] = item.subjects.subject_name;
       });
 
       setTimetable(timetableObj);
-    } catch (err) {
-      console.error('Error fetching timetable:', err);
+    } catch (error) {
+      console.error('Error fetching timetable:', error);
     } finally {
       setLoading(false);
     }
   };
 
   const fetchTeacherName = async () => {
-    if (!selectedClass) return;
-
     try {
       const { data, error } = await supabase
         .from('teachers')
@@ -83,14 +78,50 @@ function ViewTimetable() {
 
       if (error) throw error;
       setTeacherName(data.teacher_name);
-    } catch (err) {
-      console.error('Error fetching teacher name:', err);
+    } catch (error) {
+      console.error('Error fetching teacher name:', error);
       setTeacherName('Unknown');
     }
   };
 
+  const calculateCurrentWeek = () => {
+    const today = new Date();
+    const currentDay = today.getDay(); // 0 = Sunday, 1 = Monday, etc.
+    
+    // Calculate Monday of current week
+    const monday = new Date(today);
+    const daysToMonday = currentDay === 0 ? 6 : currentDay - 1;
+    monday.setDate(today.getDate() - daysToMonday);
+    
+    const weekDates = {};
+    days.forEach((day, index) => {
+      const date = new Date(monday);
+      date.setDate(monday.getDate() + index);
+      weekDates[day] = date;
+    });
+    
+    setCurrentWeek(weekDates);
+  };
+
+  const formatDate = (date) => {
+    return date.toLocaleDateString('en-US', { 
+      month: 'short', 
+      day: 'numeric',
+      year: 'numeric'
+    });
+  };
+
+  const getDayClass = (day) => {
+    const today = new Date();
+    const dayDate = currentWeek[day];
+    if (dayDate && dayDate.toDateString() === today.toDateString()) {
+      return 'today';
+    }
+    return '';
+  };
+
   const getSubjectName = (day, period) => {
-    return timetable[day]?.[period]?.subject_name || '-';
+    return timetable[day]?.[period] || '-';
   };
 
   return (
@@ -128,7 +159,9 @@ function ViewTimetable() {
               <tr>
                 <th>Period</th>
                 {days.map(day => (
-                  <th key={day}>{day}</th>
+                  <th key={day} className={getDayClass(day)}>
+                    {day} ({formatDate(currentWeek[day])})
+                  </th>
                 ))}
               </tr>
             </thead>

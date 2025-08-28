@@ -598,6 +598,72 @@ main {
   font-weight: 600;
 }
 
+/* Current Week Info */
+.current-week-info {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 1.5rem;
+  border-radius: 12px;
+  margin: 1.5rem 0;
+  text-align: center;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.current-week-info h3 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.week-note {
+  margin: 0;
+  opacity: 0.9;
+  font-size: 0.9rem;
+}
+
+/* Day Headers with Dates */
+.day-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.day-name {
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.day-date {
+  font-size: 0.8rem;
+  opacity: 0.8;
+  font-weight: 400;
+}
+
+/* Today Highlighting */
+.today {
+  background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%) !important;
+  color: #d63384 !important;
+  font-weight: 600;
+}
+
+.today .day-date {
+  color: #d63384 !important;
+  opacity: 1;
+}
+
+/* Timetable Enhancements */
+.timetable-table th.today {
+  background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+  color: #d63384;
+  border: 2px solid #fcb69f;
+}
+
+.timetable-table td.today {
+  background: rgba(255, 236, 210, 0.3);
+  border: 1px solid #fcb69f;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .header {

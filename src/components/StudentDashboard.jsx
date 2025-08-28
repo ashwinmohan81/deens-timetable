@@ -88,14 +88,29 @@ function StudentDashboard({ user, onViewChange }) {
         throw error;
       }
       
-      // Transform the data to match the expected structure
-      const transformedData = data.map(registration => ({
-        ...registration,
-        teachers: {
-          class_section: registration.class_section,
-          teacher_name: 'Unknown Teacher' // We'll get this from teachers table if needed
-        }
-      }));
+      // Transform the data to match the expected structure and fetch teacher names
+      const transformedData = await Promise.all(
+        data.map(async (registration) => {
+          // Fetch teacher name for this class
+          const { data: teacherData, error: teacherError } = await supabase
+            .from('teachers')
+            .select('teacher_name')
+            .eq('class_section', registration.class_section)
+            .single();
+
+          if (teacherError) {
+            console.error('Error fetching teacher for class:', registration.class_section, teacherError);
+          }
+
+          return {
+            ...registration,
+            teachers: {
+              class_section: registration.class_section,
+              teacher_name: teacherData?.teacher_name || 'Unknown Teacher'
+            }
+          };
+        })
+      );
       
       setRegisteredClasses(transformedData || []);
     } catch (err) {

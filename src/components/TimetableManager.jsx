@@ -56,10 +56,21 @@ function TimetableManager({ classSection }) {
       if (data && data.length > 0) {
         data.forEach(item => {
           console.log('Processing item:', item);
+          console.log('Item fields:', {
+            day: item.day,
+            day_of_week: item.day_of_week,
+            day_name: item.day_name,
+            period: item.period,
+            period_number: item.period_number,
+            period_name: item.period_name,
+            subject_name: item.subjects?.subject_name
+          });
           
           // Try different possible field names for day and period
           const dayKey = item.day || item.day_of_week || item.day_name;
           const periodKey = item.period || item.period_number || item.period_name;
+          
+          console.log('Using keys:', { dayKey, periodKey });
           
           if (dayKey && periodKey) {
             if (!timetableObj[dayKey]) {
@@ -81,48 +92,7 @@ function TimetableManager({ classSection }) {
     }
   };
 
-  const handleSubjectChange = async (day, period, subjectId) => {
-    if (!subjectId) return;
 
-    setLoading(true);
-    setError('');
-
-    try {
-      const subject = subjects.find(s => s.id === subjectId);
-      
-      // Check if this slot is already occupied
-      const existingSlot = timetable[day]?.[period];
-      
-      if (existingSlot) {
-        // Update existing slot
-        const { error } = await supabase
-          .from('timetable')
-          .update({ subject_id: subjectId })
-          .eq('id', existingSlot.id);
-
-        if (error) throw error;
-      } else {
-        // Create new slot
-        const { error } = await supabase
-          .from('timetable')
-          .insert({
-            class_section: classSection,
-            day_of_week: day,
-            period_number: period,
-            subject_id: subjectId
-          });
-
-        if (error) throw error;
-      }
-
-      fetchTimetable();
-    } catch (err) {
-      console.error('Error updating timetable:', err);
-      setError('Failed to update timetable');
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleClearSlot = async (day, period) => {
     const slot = timetable[day]?.[period];

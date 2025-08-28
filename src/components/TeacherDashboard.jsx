@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '../config/supabase';
 import SubjectManager from './SubjectManager';
 import TimetableManager from './TimetableManager';
-import { processAllPendingEmails } from '../utils/emailProcessor';
+import { processAllPendingEmails, checkEmailNotificationStatus } from '../utils/emailProcessor';
 
 function TeacherDashboard({ user }) {
   const [teacher, setTeacher] = useState(null);
@@ -150,6 +150,44 @@ function TeacherDashboard({ user }) {
     }
   };
 
+  const handleCheckNotifications = async () => {
+    try {
+      setLoading(true);
+      setError('');
+      setMessage('');
+      
+      // Check email notifications
+      const stats = await checkEmailNotificationStatus();
+      
+      if (stats.error) {
+        setError('Failed to check notifications: ' + stats.error);
+      } else {
+        // Also check if timetable changes are being logged
+        const { data: changes, error: changesError } = await supabase
+          .from('timetable_changes')
+          .select('*')
+          .eq('class_section', teacher?.class_section)
+          .order('changed_at', { ascending: false })
+          .limit(5);
+        
+        if (changesError) {
+          console.error('Error checking timetable changes:', changesError);
+        } else {
+          console.log('📅 Recent timetable changes:', changes);
+        }
+        
+        const message = `Email Notifications: ${stats.total} total, ${stats.sent} sent, ${stats.pending} pending. Recent changes: ${changes?.length || 0}`;
+        setMessage(message);
+        console.log('📊 Full notification stats:', { stats, changes });
+      }
+    } catch (err) {
+      console.error('Error checking notifications:', err);
+      setError('Failed to check notifications: ' + err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   if (loading) {
     return <div className="loading">Loading...</div>;
   }
@@ -166,6 +204,9 @@ function TeacherDashboard({ user }) {
         <div className="header-actions">
           <button onClick={handleProcessEmails} className="btn-secondary" disabled={loading}>
             📧 Process Email Notifications
+          </button>
+          <button onClick={handleCheckNotifications} className="btn-info" disabled={loading}>
+            📊 Check Notifications
           </button>
           <button onClick={handleFixUserID} className="btn-warning" disabled={loading}>
             🔧 Fix User ID

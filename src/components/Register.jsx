@@ -51,11 +51,11 @@ function Register({ onSwitchToLogin }) {
 
       setDebug('Checking for existing user_id...');
 
-      // Check if user_id is already taken
+      // Check if manual_user_id is already taken
       const { data: existingUserId, error: userIdCheckError } = await supabase
         .from('teachers')
         .select('id')
-        .eq('user_id', formData.user_id)
+        .eq('manual_user_id', formData.user_id)
         .single();
 
       if (existingUserId) {
@@ -108,6 +108,7 @@ function Register({ onSwitchToLogin }) {
         .insert({
           id: authData.user.id, // Use the auth user ID as primary key
           user_id: authData.user.id, // Link to auth user ID (not the manual User ID)
+          manual_user_id: formData.user_id, // Store the manual User ID for login
           teacher_name: formData.teacher_name,
           email: formData.email,
           class_section: formData.class_section,

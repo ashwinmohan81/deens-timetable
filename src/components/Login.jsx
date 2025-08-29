@@ -20,13 +20,13 @@ function Login({ onSwitchToRegister }) {
     setDebug('Starting login...');
 
     try {
-      setDebug('Looking up teacher by user_id...');
+      setDebug('Looking up teacher by manual user_id...');
       
-      // First get the teacher by user_id to get their email
+      // First get the teacher by manual user_id to get their email
       const { data: teacher, error: teacherError } = await supabase
         .from('teachers')
         .select('email')
-        .eq('user_id', formData.user_id)
+        .eq('manual_user_id', formData.user_id)
         .single();
 
       if (teacherError || !teacher) {

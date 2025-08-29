@@ -34,14 +34,14 @@ function TeacherDashboard({ user }) {
       const { data, error } = await supabase
         .from('teachers')
         .select('*')
-        .eq('user_id', user.id)
+        .eq('id', user.id)
         .single();
 
       if (error) {
-        console.error('❌ Error fetching teacher by user_id:', error);
+        console.error('❌ Error fetching teacher by id:', error);
         console.log('🔍 User ID being searched:', user.id);
         
-        // No fallback needed - user_id should work
+        // No fallback needed - id should work
         throw error;
       }
       

@@ -107,7 +107,7 @@ function Register({ onSwitchToLogin }) {
         .from('teachers')
         .insert({
           id: authData.user.id, // Use the auth user ID as primary key
-          user_id: authData.user.id, // Link to auth user ID (not the manual User ID)
+
           manual_user_id: formData.user_id, // Store the manual User ID for login
           teacher_name: formData.teacher_name,
           email: formData.email,

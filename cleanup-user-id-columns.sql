@@ -8,7 +8,19 @@ WHERE table_name = 'teachers'
 ORDER BY ordinal_position;
 
 -- Remove the redundant user_id column (it's the same as id)
-ALTER TABLE teachers DROP COLUMN user_id;
+-- Check if column exists first to avoid errors
+DO $$ 
+BEGIN
+    IF EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_name = 'teachers' AND column_name = 'user_id'
+    ) THEN
+        ALTER TABLE teachers DROP COLUMN user_id;
+        RAISE NOTICE 'user_id column removed successfully';
+    ELSE
+        RAISE NOTICE 'user_id column does not exist - already cleaned up';
+    END IF;
+END $$;
 
 -- Verify the cleaned structure
 SELECT column_name, data_type, is_nullable 

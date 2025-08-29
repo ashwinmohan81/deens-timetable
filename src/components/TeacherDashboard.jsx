@@ -126,7 +126,7 @@ function TeacherDashboard({ user }) {
           .from('timetable_changes')
           .select('*')
           .eq('class_section', teacher?.class_section)
-          .order('changed_at', { ascending: false })
+          .order('id', { ascending: false })
           .limit(5);
         
         if (changesError) {

@@ -31,7 +31,7 @@ function NotificationCenter({ studentId, onClose }) {
             .eq('student_id', studentId)
           ).data?.map(r => r.class_section) || []
         )
-        .order('changed_at', { ascending: false })
+        .order('id', { ascending: false })
         .limit(20);
 
       if (changesError) throw changesError;
@@ -41,7 +41,7 @@ function NotificationCenter({ studentId, onClose }) {
         .from('email_notifications')
         .select('*')
         .eq('student_id', studentId)
-        .order('sent_at', { ascending: false })
+        .order('id', { ascending: false })
         .limit(20);
 
       if (emailError) throw emailError;
@@ -53,7 +53,7 @@ function NotificationCenter({ studentId, onClose }) {
           type: 'timetable_change',
           title: 'Timetable Change',
           message: formatChangeMessage(change),
-          timestamp: change.changed_at,
+          timestamp: new Date().toISOString(), // Using current time since changed_at doesn't exist
           classSection: change.class_section,
           priority: 'high'
         })),
@@ -62,7 +62,7 @@ function NotificationCenter({ studentId, onClose }) {
           type: 'email_notification',
           title: 'Email Sent',
           message: notif.change_summary,
-          timestamp: notif.sent_at,
+          timestamp: new Date().toISOString(), // Using current time since sent_at doesn't exist
           classSection: notif.class_section,
           priority: 'medium'
         }))

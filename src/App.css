@@ -186,6 +186,57 @@ main {
   opacity: 0.9;
 }
 
+.header-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: 1rem;
+}
+
+.header-actions button {
+  min-width: 160px;
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.header-actions .btn-secondary {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.header-actions .btn-secondary:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.3);
+  transform: translateY(-1px);
+}
+
+.header-actions .btn-info {
+  background: rgba(23, 162, 184, 0.8);
+  color: white;
+}
+
+.header-actions .btn-info:hover {
+  background: rgba(23, 162, 184, 1);
+  transform: translateY(-1px);
+}
+
+.header-actions .btn-danger {
+  background: rgba(220, 53, 69, 0.8);
+  color: white;
+}
+
+.header-actions .btn-danger:hover {
+  background: rgba(220, 53, 69, 1);
+  transform: translateY(-1px);
+}
+
 .btn-danger {
   background: #dc3545;
   color: white;
@@ -1161,4 +1212,9 @@ main {
   text-align: center;
   font-size: 0.875rem;
   color: #1976d2;
+}
+
+.header-actions .btn-danger:hover {
+  background: rgba(220, 53, 69, 1);
+  transform: translateY(-1px);
 }

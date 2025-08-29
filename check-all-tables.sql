@@ -84,7 +84,6 @@ ORDER BY ordinal_position;
 
 SELECT 'TIMETABLE_CHANGES TABLE' as table_name, 'DATA SAMPLE' as check_type;
 SELECT * FROM timetable_changes 
-ORDER BY changed_at DESC 
 LIMIT 10;
 
 -- ========================================
@@ -98,7 +97,6 @@ ORDER BY ordinal_position;
 
 SELECT 'EMAIL_NOTIFICATIONS TABLE' as table_name, 'DATA SAMPLE' as check_type;
 SELECT * FROM email_notifications 
-ORDER BY created_at DESC 
 LIMIT 10;
 
 -- ========================================

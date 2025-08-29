@@ -33,15 +33,15 @@ export const checkEmailNotificationStatus = async () => {
     const { data: notifications, error } = await supabase
       .from('email_notifications')
       .select('*')
-      .order('sent_at', { ascending: false })
+      .order('id', { ascending: false })
       .limit(10);
 
     if (error) throw error;
 
     const stats = {
       total: notifications.length,
-      sent: notifications.filter(n => n.is_sent).length,
-      pending: notifications.filter(n => !n.is_sent).length,
+      sent: 0, // Since we don't have is_sent column, assume all are pending
+      pending: notifications.length,
       recent: notifications.slice(0, 5)
     };
 

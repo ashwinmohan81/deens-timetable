@@ -110,37 +110,35 @@ class EmailService {
       // Get all pending notifications
       const { data: notifications, error } = await supabase
         .from('email_notifications')
-        .select(`
-          *,
-          students(email)
-        `)
-        .eq('is_sent', false)
-        .order('sent_at', { ascending: true });
+        .select('*')
+        .order('id', { ascending: true });
 
       if (error) throw error;
 
       // Process each notification
       for (const notification of notifications) {
         try {
-          const studentEmail = notification.students?.email;
-          if (!studentEmail) {
-            console.error('No email found for student:', notification.student_id);
+          // Get student email from student_registrations table
+          const { data: studentReg, error: studentError } = await supabase
+            .from('student_registrations')
+            .select('students(email)')
+            .eq('class_section', notification.class_section)
+            .single();
+
+          if (studentError || !studentReg?.students?.email) {
+            console.error('No student email found for class:', notification.class_section);
             continue;
           }
+
+          const studentEmail = studentReg.students.email;
 
           // Send the email
           await this.sendTimetableChangeNotification(
             studentEmail,
             notification.class_section,
-            notification.change_summary,
-            notification.notification_link
+            notification.change_summary || 'Timetable has been updated',
+            notification.notification_link || 'View timetable in student dashboard'
           );
-
-          // Mark as sent
-          await supabase
-            .from('email_notifications')
-            .update({ is_sent: true })
-            .eq('id', notification.id);
 
           console.log(`Email sent successfully to ${studentEmail}`);
           
@@ -149,15 +147,6 @@ class EmailService {
           
         } catch (emailError) {
           console.error('Failed to send email for notification:', notification.id, emailError);
-          
-          // Mark as failed (optional - you could add a retry_count field)
-          await supabase
-            .from('email_notifications')
-            .update({ 
-              is_sent: false,
-              // You could add error_message and retry_count fields here
-            })
-            .eq('id', notification.id);
         }
       }
 

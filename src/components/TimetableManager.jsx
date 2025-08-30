@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../config/supabase';
+import { processAllPendingEmails } from '../utils/emailProcessor';
 
 function TimetableManager({ classSection }) {
   const [subjects, setSubjects] = useState([]);
@@ -230,6 +231,19 @@ function TimetableManager({ classSection }) {
         console.log('⚠️ No entries to save');
       }
 
+      // Process email notifications after successful save
+      try {
+        console.log('📧 Processing email notifications...');
+        const emailResult = await processAllPendingEmails();
+        if (emailResult.success) {
+          console.log(`✅ Email notifications processed: ${emailResult.processed} sent`);
+        } else {
+          console.log('⚠️ Email notifications failed:', emailResult.error);
+        }
+      } catch (emailError) {
+        console.error('❌ Error processing email notifications:', emailError);
+      }
+
       setMessage('Timetable saved successfully!');
       console.log('🎉 Timetable save completed successfully');
     } catch (err) {
@@ -276,6 +290,19 @@ function TimetableManager({ classSection }) {
           });
 
         if (error) throw error;
+      }
+
+      // Process email notifications after cell change
+      try {
+        console.log('📧 Processing email notifications for cell change...');
+        const emailResult = await processAllPendingEmails();
+        if (emailResult.success) {
+          console.log(`✅ Email notifications processed: ${emailResult.processed} sent`);
+        } else {
+          console.log('⚠️ Email notifications failed:', emailResult.error);
+        }
+      } catch (emailError) {
+        console.error('❌ Error processing email notifications:', emailError);
       }
 
       fetchTimetable();

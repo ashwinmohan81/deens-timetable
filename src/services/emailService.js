@@ -115,7 +115,9 @@ class EmailService {
 
       if (error) throw error;
 
-      // Process each notification
+      // Group notifications by student to avoid duplicates
+      const studentNotifications = new Map();
+      
       for (const notification of notifications) {
         try {
           // Get student email from student_registrations table
@@ -131,26 +133,56 @@ class EmailService {
           }
 
           const studentEmail = studentReg.students.email;
+          
+          // Only send one email per student per class
+          if (!studentNotifications.has(studentEmail)) {
+            studentNotifications.set(studentEmail, {
+              email: studentEmail,
+              class_section: notification.class_section,
+              change_summary: 'Timetable has been updated',
+              notification_link: 'View timetable in student dashboard'
+            });
+          }
+        } catch (emailError) {
+          console.error('Failed to process notification:', notification.id, emailError);
+        }
+      }
 
-          // Send the email
+      // Send one email per student
+      let emailsSent = 0;
+      for (const [studentEmail, notification] of studentNotifications) {
+        try {
           await this.sendTimetableChangeNotification(
             studentEmail,
             notification.class_section,
-            notification.change_summary || 'Timetable has been updated',
-            notification.notification_link || 'View timetable in student dashboard'
+            notification.change_summary,
+            notification.notification_link
           );
 
           console.log(`Email sent successfully to ${studentEmail}`);
+          emailsSent++;
           
           // Add delay to avoid rate limiting
           await new Promise(resolve => setTimeout(resolve, 1000));
           
         } catch (emailError) {
-          console.error('Failed to send email for notification:', notification.id, emailError);
+          console.error('Failed to send email to:', studentEmail, emailError);
         }
       }
 
-      return { success: true, processed: notifications.length };
+      // Clear processed notifications
+      if (notifications.length > 0) {
+        const { error: deleteError } = await supabase
+          .from('email_notifications')
+          .delete()
+          .in('id', notifications.map(n => n.id));
+        
+        if (deleteError) {
+          console.error('Failed to clear notifications:', deleteError);
+        }
+      }
+
+      return { success: true, processed: emailsSent };
     } catch (error) {
       console.error('Error processing notifications:', error);
       throw error;

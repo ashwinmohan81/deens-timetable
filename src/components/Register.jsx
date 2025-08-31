@@ -206,7 +206,7 @@ function Register({ onSwitchToLogin }) {
             >
               <option value="">Select Grade</option>
               {Array.from({length: 12}, (_, i) => i + 1).map(grade => (
-                <option key={grade} value={`Grade ${grade}`}>
+                <option key={grade} value={grade}>
                   Grade {grade}
                 </option>
               ))}
@@ -235,7 +235,7 @@ function Register({ onSwitchToLogin }) {
           </div>
           {formData.class_grade && formData.class_section_letter && (
             <div className="selected-class">
-              Selected: <strong>{formData.class_grade} {formData.class_section_letter}</strong>
+              Selected: <strong>{formData.class_grade}{formData.class_section_letter}</strong>
             </div>
           )}
         </div>

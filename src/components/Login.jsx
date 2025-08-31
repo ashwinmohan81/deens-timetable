@@ -21,12 +21,17 @@ function Login({ onSwitchToRegister }) {
 
     try {
       setDebug('Looking up teacher by manual user_id...');
+      setDebug(`User ID entered: "${formData.user_id}"`);
+      setDebug(`User ID length: ${formData.user_id.length}`);
+      setDebug(`User ID char codes: ${formData.user_id.split('').map(c => c.charCodeAt(0)).join(', ')}`);
       
       // First get the teacher by manual user_id to get their email
+      // Normalize case to handle case sensitivity issues
+      const normalizedUserId = formData.user_id.trim();
       const { data: teacher, error: teacherError } = await supabase
         .from('teachers')
         .select('email')
-        .eq('manual_user_id', formData.user_id)
+        .eq('manual_user_id', normalizedUserId)
         .single();
 
       if (teacherError || !teacher) {

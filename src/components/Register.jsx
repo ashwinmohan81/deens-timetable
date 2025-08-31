@@ -20,7 +20,8 @@ function Register({ onSwitchToLogin }) {
     e.preventDefault();
     setLoading(false); // Disabled for testing
     setError('');
-    setDebug('Starting registration...');
+          setDebug('Starting registration...');
+      setDebug(`Form data: grade=${formData.class_grade}, section=${formData.class_section_letter}, class_section=${formData.class_section}`);
 
     // Validation
     if (formData.password !== formData.confirm_password) {
@@ -30,6 +31,16 @@ function Register({ onSwitchToLogin }) {
 
     if (formData.password.length < 6) {
       setError('Password must be at least 6 characters long');
+      return;
+    }
+
+    if (!formData.class_grade || !formData.class_section_letter) {
+      setError('Please select both grade and section');
+      return;
+    }
+
+    if (!formData.class_section || formData.class_section.length < 2) {
+      setError('Invalid class section format');
       return;
     }
 
@@ -196,11 +207,15 @@ function Register({ onSwitchToLogin }) {
               id="class_grade"
               name="class_grade"
               value={formData.class_grade || ''}
-              onChange={(e) => setFormData({
-                ...formData,
-                class_grade: e.target.value,
-                class_section: e.target.value + (formData.class_section_letter || '')
-              })}
+              onChange={(e) => {
+                const newGrade = e.target.value;
+                const newSection = formData.class_section_letter || '';
+                setFormData({
+                  ...formData,
+                  class_grade: newGrade,
+                  class_section: newGrade && newSection ? newGrade + newSection : ''
+                });
+              }}
               required
               className="grade-select"
             >
@@ -216,11 +231,15 @@ function Register({ onSwitchToLogin }) {
               id="class_section_letter"
               name="class_section_letter"
               value={formData.class_section_letter || ''}
-              onChange={(e) => setFormData({
-                ...formData,
-                class_section_letter: e.target.value,
-                class_section: (formData.class_grade || '') + e.target.value
-              })}
+              onChange={(e) => {
+                const newSection = e.target.value;
+                const newGrade = formData.class_grade || '';
+                setFormData({
+                  ...formData,
+                  class_section_letter: newSection,
+                  class_section: newGrade && newSection ? newGrade + newSection : ''
+                });
+              }}
               required
               className="section-select"
               disabled={!formData.class_grade}

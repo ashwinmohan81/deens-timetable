@@ -54,6 +54,12 @@ function Register({ onSwitchToLogin }) {
         .eq('class_section', formData.class_section)
         .single();
 
+      if (checkError && checkError.code !== 'PGRST116') {
+        setError('Error checking class availability: ' + checkError.message);
+        setDebug('Class check error: ' + checkError.message);
+        return;
+      }
+
       if (existingTeacher) {
         setError('This class and section is already registered');
         setDebug('Class/section already taken');
@@ -69,6 +75,12 @@ function Register({ onSwitchToLogin }) {
         .eq('manual_user_id', formData.user_id)
         .single();
 
+      if (userIdCheckError && userIdCheckError.code !== 'PGRST116') {
+        setError('Error checking user ID availability: ' + userIdCheckError.message);
+        setDebug('User ID check error: ' + userIdCheckError.message);
+        return;
+      }
+
       if (existingUserId) {
         setError('User ID is already taken');
         setDebug('User ID already taken');
@@ -83,6 +95,12 @@ function Register({ onSwitchToLogin }) {
         .select('id')
         .eq('email', formData.email)
         .single();
+
+      if (emailCheckError && emailCheckError.code !== 'PGRST116') {
+        setError('Error checking email availability: ' + emailCheckError.message);
+        setDebug('Email check error: ' + emailCheckError.message);
+        return;
+      }
 
       if (existingEmail) {
         setError('Email is already registered');

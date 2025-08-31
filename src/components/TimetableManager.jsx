@@ -231,17 +231,49 @@ function TimetableManager({ classSection }) {
         console.log('⚠️ No entries to save');
       }
 
-      // Process email notifications after successful save
+      // Create email notifications directly after successful save
       try {
-        console.log('📧 Processing email notifications...');
-        const emailResult = await processAllPendingEmails();
-        if (emailResult.success) {
-          console.log(`✅ Email notifications processed: ${emailResult.processed} sent`);
+        console.log('📧 Creating email notifications...');
+        
+        // Get students registered for this class
+        const { data: studentRegs, error: studentError } = await supabase
+          .from('student_registrations')
+          .select('student_id')
+          .eq('class_section', classSection);
+        
+        if (studentError) {
+          console.error('❌ Error fetching student registrations:', studentError);
+        } else if (studentRegs && studentRegs.length > 0) {
+          // Create notifications for each student
+          const notifications = studentRegs.map(reg => ({
+            student_id: reg.student_id,
+            class_section: classSection,
+            change_summary: 'Timetable has been updated',
+            notification_link: 'View updated timetable in student dashboard'
+          }));
+          
+          const { error: insertError } = await supabase
+            .from('email_notifications')
+            .insert(notifications);
+          
+          if (insertError) {
+            console.error('❌ Error creating notifications:', insertError);
+          } else {
+            console.log(`✅ Created ${notifications.length} email notifications`);
+            
+            // Process the notifications immediately
+            const emailResult = await processAllPendingEmails();
+            if (emailResult.success) {
+              console.log(`✅ Email notifications processed: ${emailResult.processed} sent`);
+            } else {
+              console.log('⚠️ Email notifications failed:', emailResult.error);
+            }
+          }
         } else {
-          console.log('⚠️ Email notifications failed:', emailResult.error);
+          console.log('ℹ️ No students registered for this class');
         }
       } catch (emailError) {
-        console.error('❌ Error processing email notifications:', emailError);
+        console.error('❌ Error creating email notifications:', emailError);
       }
 
       setMessage('Timetable saved successfully!');

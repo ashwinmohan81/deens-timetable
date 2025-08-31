@@ -38,7 +38,7 @@ function StudentDashboard({ user, onViewChange }) {
           .from('students')
           .insert({
             email: user.email,
-            id: user.id
+            user_id: user.id
           })
           .select()
           .single();
